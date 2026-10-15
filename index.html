@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#14171a">
+<title>GridProof – NSP Interface Qualification</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div>
+      <h1>GridProof: NSP interface readiness</h1>
+      <p>Check a SCADA vendor against grid-connection criteria. General plant SCADA experience does not count as evidence of a utility-facing interface.</p>
+    </div>
+    <button id="helpBtn" class="ghost helpbtn" aria-label="Open help and guide" title="Help and guide">?</button>
+  </header>
+
+  <section class="panel profilebar">
+    <label for="profileSelect">Assessment</label>
+    <select id="profileSelect"></select>
+    <button id="newProfile" class="ghost">New</button>
+    <button id="renameProfile" class="ghost">Rename</button>
+    <button id="deleteProfile" class="ghost">Delete</button>
+    <span class="spacer"></span>
+    <button id="demoPass" class="ghost">Load demo: passing</button>
+    <button id="demoFail" class="ghost">Load demo: failing</button>
+  </section>
+
+  <nav class="stepper" aria-label="Assessment steps">
+    <button class="step ghost" data-step="0"><span class="n">1</span>Profile</button>
+    <button class="step ghost" data-step="1"><span class="n">2</span>Core criteria</button>
+    <button class="step ghost" data-step="2"><span class="n">3</span>33kV point list</button>
+    <button class="step ghost" data-step="3"><span class="n">4</span>Evidence</button>
+    <button class="step ghost" data-step="4"><span class="n">5</span>Final report</button>
+  </nav>
+
+  <div class="layout">
+    <main>
+      <div class="tabpane" id="pane-0">
+        <section class="panel">
+          <h2>Profile</h2>
+          <p class="desc">Name the vendor, the project and the 33kV connection point. These details go into every export.</p>
+          <div class="fields" id="dossier"></div>
+        </section>
+      </div>
+
+      <div class="tabpane" id="pane-1" hidden>
+        <section class="panel"><h2>Core criteria</h2><div id="questions"></div></section>
+      </div>
+
+      <div class="tabpane" id="pane-2" hidden>
+        <section class="panel">
+          <h2>33kV demarcation point list</h2>
+          <p class="desc">Mark whether each signal is in the vendor's delivered scope. Required points are NSP demarcation signals; plant-control points do not substitute for them.</p>
+          <details class="tip"><summary>Auditor tip</summary>
+            <p><b>What to ask for:</b> the NSP-agreed signal list, and the vendor's point list showing each signal mapped to a named device and protocol address.</p>
+            <p><b>Red flags:</b> the vendor's list only covers plant control; SOE timestamps applied at the SCADA server instead of the relay; no answer on where sync-check is enforced.</p>
+          </details>
+          <div id="points"></div>
+          <p id="pointSummary" class="pointsummary"></p>
+        </section>
+      </div>
+
+      <div class="tabpane" id="pane-3" hidden>
+        <section class="panel">
+          <h2>Evidence files</h2>
+          <p class="desc">Attach FAT/SAT sign-off sheets or single-line diagrams. The file is hashed (SHA-256) in your browser; only the name, size, date and hash are stored. The file itself is not kept.</p>
+          <details class="tip"><summary>Auditor tip</summary>
+            <p><b>What to ask for:</b> the final signed PDF, with NSP witness names and dates on it.</p>
+            <p><b>Red flags:</b> unsigned drafts, scans with no NSP signature, or several versions of the same sheet. A hash shows a file has not changed since you logged it. It does not prove the signatures are valid.</p>
+          </details>
+          <div id="dropzone" class="dropzone" tabindex="0" role="button" aria-label="Choose or drop evidence files">Drop files here or click to choose</div>
+          <input type="file" id="fileInput" multiple hidden>
+          <div id="fileList"></div>
+        </section>
+      </div>
+
+      <div class="tabpane" id="pane-4" hidden>
+        <section class="panel">
+          <h2>Final report</h2>
+          <div id="report"></div>
+          <div class="actions" style="margin-top:1rem">
+            <button id="exportJson">Export JSON</button>
+            <button id="exportMd" class="ghost">Export Markdown</button>
+            <button id="printBtn" class="ghost">Print / PDF</button>
+            <button id="resetBtn" class="ghost">Reset this assessment</button>
+          </div>
+        </section>
+      </div>
+
+      <div class="stepnav">
+        <button id="backBtn" class="ghost">Back</button>
+        <button id="nextBtn">Next</button>
+      </div>
+    </main>
+
+    <aside class="panel verdict" aria-live="polite">
+      <h2>Verdict</h2>
+      <div class="score" id="score">0%</div>
+      <div class="badge bad" id="badge">Not assessed</div>
+      <p id="remarks" style="margin-top:.8rem;font-size:.88rem;color:var(--muted)"></p>
+      <ul class="blockers" id="blockers"></ul>
+    </aside>
+  </div>
+</div>
+
+<dialog id="helpDialog" aria-labelledby="helpTitle">
+  <div class="dlg">
+    <h2 id="helpTitle">How to run an assessment</h2>
+    <ol>
+      <li><b>Profile.</b> Enter the vendor, project, capacity and the named 33kV connection point.</li>
+      <li><b>Core criteria.</b> Answer the four pillars: named 33kV NSP interface, IEC 61850 / DNP3 in live service, NSP-witnessed FAT/SAT/energisation, and prior NSP relationship. Each shows what auditors look for.</li>
+      <li><b>33kV point list.</b> Mark each of the 10 demarcation signals as in scope, partial or not in scope.</li>
+      <li><b>Evidence.</b> Drop signed FAT/SAT sheets or single-line diagrams to log a SHA-256 hash for each.</li>
+      <li><b>Final report.</b> Review the verdict and export JSON, Markdown or a printed PDF.</li>
+    </ol>
+    <h3>What is a critical blocker?</h3>
+    <p>A "High risk" verdict follows if criteria 1 to 3 are answered with anything short of full evidence, or if a required point is partial or not in scope. In-plant Modbus/OPC SCADA cannot stand in for a named utility-facing interface.</p>
+    <h3>How evidence hashing works</h3>
+    <p>Your browser computes a SHA-256 fingerprint of each file. If the file is changed later, its hash will differ, so the logged value shows which exact file you reviewed. The file never leaves your device and is not stored. Hashing needs https or localhost.</p>
+    <h3>Try it</h3>
+    <p>The demo buttons add a sample assessment as a new record, so your data is untouched. Everything is stored in this browser only. The scoring is a screening aid and does not replace the NSP's own review.</p>
+    <div class="actions">
+      <button id="helpClose">Got it</button>
+      <button id="helpDemo" class="ghost">Load passing demo</button>
+    </div>
+  </div>
+</dialog>
+<script src="js/app.js"></script>
+</body>
+</html>
